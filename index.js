@@ -14,13 +14,26 @@ app.use(express.json());
 
 const allowedOrigins = [
     process.env.FRONTEND_URL,
+    'https://expense-don.vercel.app',
     'http://localhost:5173',
     'http://localhost:3000'
-].filter(Boolean);
+].filter(Boolean).map(origin => origin.replace(/\/$/, ''));
 
 app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        const normalizedOrigin = origin.replace(/\/$/, '');
+        if (allowedOrigins.includes(normalizedOrigin)) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked for origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
 }));
 
 // Dev logging middleware
