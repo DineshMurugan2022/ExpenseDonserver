@@ -7,12 +7,13 @@ const {
     toggleRecurringStatus
 } = require('../controllers/recurringController');
 const { protect } = require('../middleware/auth');
+const { validateRecurring } = require('../middleware/validation');
 
 router.use(protect);
 
 router.route('/')
     .get(getRecurringTransactions)
-    .post(addRecurringTransaction);
+    .post(validateRecurring, addRecurringTransaction);
 
 router.route('/:id')
     .delete(deleteRecurringTransaction);

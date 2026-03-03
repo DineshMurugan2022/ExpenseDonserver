@@ -30,6 +30,14 @@ SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 JWT_SECRET=your_jwt_secret
 FRONTEND_URL=http://localhost:5173
+
+# Optional email settings for verification
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+EMAIL_USER=your_email_user
+EMAIL_PASS=your_email_password
+EMAIL_FROM=your@domain.com
+EMAIL_SECURE=false  # true if using port 465
 ```
 
 ### 3. Start the Server

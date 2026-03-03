@@ -7,12 +7,13 @@ const {
     deleteDebt
 } = require('../controllers/debtController');
 const { protect } = require('../middleware/auth');
+const { validateDebt } = require('../middleware/validation');
 
 router.use(protect);
 
 router.route('/')
     .get(getDebts)
-    .post(addDebt);
+    .post(validateDebt, addDebt);
 
 router.route('/:id')
     .patch(updateDebt)

@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const supabase = require('../utils/supabase');
 
 exports.protect = async (req, res, next) => {
@@ -16,19 +15,29 @@ exports.protect = async (req, res, next) => {
     }
 
     try {
-        // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // Verify token with Supabase
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
-        const { data: users, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', decoded.id);
-
-        if (error || !users || users.length === 0) {
+        if (authError || !user) {
             return res.status(401).json({ success: false, error: 'Not authorized to access this route' });
         }
 
-        req.user = users[0];
+        // Fetch profile for data compatibility (name, currency, etc.)
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        if (profileError) {
+            console.warn('Profile fetch warning in middleware:', profileError.message);
+        }
+
+        // Attach both auth user and profile info for flexibility
+        req.user = {
+            ...user,
+            ...(profile || {})
+        };
 
         next();
     } catch (err) {

@@ -9,6 +9,15 @@ Add a `currency` column to store user preferences.
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'INR';
 ```
 
+### 1.1 Email Verification Columns
+Add fields to handle verification tokens and status.
+
+```sql
+ALTER TABLE profiles
+    ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS verification_token TEXT;
+```
+
 ## 2. Transactions Table
 Add a `currency` column to record the currency used for each transaction.
 
@@ -60,3 +69,23 @@ CREATE POLICY "Users can manage their own recurring transactions"
 ON recurring_transactions FOR ALL 
 USING (auth.uid() = user_id);
 ```
+
+## 6. Refresh Tokens Table
+Create a table for storing refresh tokens so they can be invalidated.
+
+```sql
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    token TEXT NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE refresh_tokens ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can see their own tokens" 
+ON refresh_tokens FOR SELECT, DELETE
+USING (auth.uid() = user_id);
+```
+
